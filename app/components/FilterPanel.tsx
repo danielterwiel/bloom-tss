@@ -1,0 +1,256 @@
+import * as React from "react";
+import {
+  CATEGORIES,
+  SPECIALTIES,
+  CERTIFICATIONS,
+  COUNTRIES,
+  EMPLOYEE_RANGES,
+  BUSINESS_TYPES,
+  REVENUE_RANGES,
+} from "@repo/data";
+import type { CompanyFilters } from "@repo/data";
+import { Input, MultiSelect, Select, Slider } from "@repo/ui";
+import type { MultiSelectOption, SelectOption } from "@repo/ui";
+
+export interface FilterPanelProps {
+  filters: CompanyFilters;
+  onFiltersChange: (filters: CompanyFilters) => void;
+  resultsCount: number;
+  totalCount: number;
+  className?: string;
+}
+
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = React.useState<T>(value);
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+}
+
+const categoryOptions: MultiSelectOption[] = CATEGORIES.map((c) => ({ value: c, label: c }));
+const specialtyOptions: MultiSelectOption[] = SPECIALTIES.map((s) => ({ value: s, label: s }));
+const certificationOptions: MultiSelectOption[] = CERTIFICATIONS.map((c) => ({
+  value: c,
+  label: c,
+}));
+const countryOptions: MultiSelectOption[] = COUNTRIES.map((c) => ({ value: c, label: c }));
+
+const employeeOptions: SelectOption[] = EMPLOYEE_RANGES.map((e) => ({ value: e, label: e }));
+const businessTypeOptions: SelectOption[] = BUSINESS_TYPES.map((b) => ({ value: b, label: b }));
+const revenueOptions: SelectOption[] = REVENUE_RANGES.map((r) => ({ value: r, label: r }));
+
+const FOUNDED_MIN = 1990;
+const FOUNDED_MAX = 2024;
+
+export function FilterPanel({
+  filters,
+  onFiltersChange,
+  resultsCount,
+  totalCount,
+  className = "",
+}: FilterPanelProps) {
+  const [searchText, setSearchText] = React.useState(filters.text ?? "");
+  const debouncedSearchText = useDebounce(searchText, 300);
+
+  // Use ref for filters so the debounce effect doesn't re-fire on filter changes
+  const filtersRef = React.useRef(filters);
+  filtersRef.current = filters;
+
+  // Push debounced search text to filters (only when debouncedSearchText changes)
+  React.useEffect(() => {
+    const currentFilters = filtersRef.current;
+    if (debouncedSearchText !== (currentFilters.text ?? "")) {
+      onFiltersChange({
+        ...currentFilters,
+        text: debouncedSearchText || undefined,
+      });
+    }
+  }, [debouncedSearchText, onFiltersChange]);
+
+  // Sync local input state when filters.text changes externally (e.g. "Clear all", URL nav)
+  React.useEffect(() => {
+    setSearchText(filters.text ?? "");
+  }, [filters.text]);
+
+  const hasActiveFilters = React.useMemo(() => {
+    return (
+      (filters.text && filters.text.trim().length > 0) ||
+      (filters.categories && filters.categories.length > 0) ||
+      (filters.specialties && filters.specialties.length > 0) ||
+      (filters.employees && filters.employees.length > 0) ||
+      (filters.businessTypes && filters.businessTypes.length > 0) ||
+      (filters.revenues && filters.revenues.length > 0) ||
+      (filters.countries && filters.countries.length > 0) ||
+      (filters.certifications && filters.certifications.length > 0) ||
+      filters.foundedMin !== undefined ||
+      filters.foundedMax !== undefined
+    );
+  }, [filters]);
+
+  const handleClearAll = React.useCallback(() => {
+    setSearchText("");
+    onFiltersChange({});
+  }, [onFiltersChange]);
+
+  const handleSearchChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchText(event.target.value);
+  }, []);
+
+  return (
+    <div className={`rounded-lg border border-border bg-background p-5 ${className}`}>
+      {/* Search input */}
+      <div className="relative">
+        <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+          <svg
+            className="h-4 w-4 text-foreground-muted"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            aria-hidden="true"
+          >
+            <circle cx="11" cy="11" r="8" />
+            <path strokeLinecap="round" d="m21 21-4.35-4.35" />
+          </svg>
+        </div>
+        <Input
+          type="text"
+          placeholder="Search companies by name or description..."
+          value={searchText}
+          onChange={handleSearchChange}
+          className="w-full pl-10"
+          data-slot="text-search"
+          aria-label="Search companies by name or description"
+        />
+      </div>
+
+      {/* Filter controls grid */}
+      <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <MultiSelect
+          options={categoryOptions}
+          placeholder={`Category${filters.categories?.length ? ` (${filters.categories.length})` : ""}`}
+          value={filters.categories ?? []}
+          onValueChange={(values) =>
+            onFiltersChange({ ...filters, categories: values.length > 0 ? values : undefined })
+          }
+        />
+        <MultiSelect
+          options={specialtyOptions}
+          placeholder={`Specialty${filters.specialties?.length ? ` (${filters.specialties.length})` : ""}`}
+          value={filters.specialties ?? []}
+          onValueChange={(values) =>
+            onFiltersChange({ ...filters, specialties: values.length > 0 ? values : undefined })
+          }
+        />
+        <MultiSelect
+          options={certificationOptions}
+          placeholder={`Certs${filters.certifications?.length ? ` (${filters.certifications.length})` : ""}`}
+          value={filters.certifications ?? []}
+          onValueChange={(values) =>
+            onFiltersChange({ ...filters, certifications: values.length > 0 ? values : undefined })
+          }
+        />
+        <MultiSelect
+          options={countryOptions}
+          placeholder={`Country${filters.countries?.length ? ` (${filters.countries.length})` : ""}`}
+          value={filters.countries ?? []}
+          onValueChange={(values) =>
+            onFiltersChange({ ...filters, countries: values.length > 0 ? values : undefined })
+          }
+        />
+
+        <Select
+          options={employeeOptions}
+          placeholder="Employees"
+          value={filters.employees?.[0]}
+          onValueChange={(value) =>
+            onFiltersChange({ ...filters, employees: value ? [value] : undefined })
+          }
+        />
+        <Select
+          options={businessTypeOptions}
+          placeholder="Business Type"
+          value={filters.businessTypes?.[0]}
+          onValueChange={(value) =>
+            onFiltersChange({ ...filters, businessTypes: value ? [value] : undefined })
+          }
+        />
+        <Select
+          options={revenueOptions}
+          placeholder="Revenue"
+          value={filters.revenues?.[0]}
+          onValueChange={(value) =>
+            onFiltersChange({ ...filters, revenues: value ? [value] : undefined })
+          }
+        />
+
+        {/* Founded year range slider */}
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-foreground-muted">Founded</span>
+            <span className="font-medium text-foreground tabular-nums">
+              {filters.foundedMin ?? FOUNDED_MIN}–{filters.foundedMax ?? FOUNDED_MAX}
+            </span>
+          </div>
+          <Slider
+            value={[filters.foundedMin ?? FOUNDED_MIN, filters.foundedMax ?? FOUNDED_MAX] as const}
+            min={FOUNDED_MIN}
+            max={FOUNDED_MAX}
+            step={1}
+            onValueChange={(value) => {
+              if (Array.isArray(value)) {
+                const [min, max] = value;
+                onFiltersChange({
+                  ...filters,
+                  foundedMin: min === FOUNDED_MIN ? undefined : min,
+                  foundedMax: max === FOUNDED_MAX ? undefined : max,
+                });
+              }
+            }}
+            getAriaLabel={(index) =>
+              index === 0 ? "Founded year minimum" : "Founded year maximum"
+            }
+          />
+        </div>
+      </div>
+
+      {/* Results count + clear */}
+      <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
+        <p className="text-sm text-foreground-muted">
+          <span className="font-semibold text-foreground">{resultsCount.toLocaleString()}</span>
+          {resultsCount !== totalCount && <> of {totalCount.toLocaleString()}</>} results
+        </p>
+
+        {hasActiveFilters && (
+          <button
+            onClick={handleClearAll}
+            className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium text-foreground-muted transition-colors hover:bg-muted hover:text-foreground"
+          >
+            <svg
+              className="h-3.5 w-3.5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              aria-hidden="true"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+            Clear all
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+FilterPanel.displayName = "FilterPanel";

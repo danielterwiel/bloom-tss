@@ -1,0 +1,9 @@
+/**
+ * Font Configuration
+ * - Playfair Display: Used for headings (serif, elegant)
+ * - Inter: Used for body text (sans-serif, highly legible)
+ *
+ * Fonts are loaded via <link> tags in BaseLayout.astro for better performance.
+ * Using CSS @import for Google Fonts creates a render-blocking chain.
+ * The <link> approach lets the browser discover fonts during HTML parsing.
+ */

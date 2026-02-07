@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+dist/
+.output/
+.turbo/
+.vercel/
+.vinxi/
+
+# Cache
+*.tsbuildinfo
+.eslintcache
+.cache/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+bun-error.log*
+
+# Test
+coverage/
+playwright-report/
+test-results/
+
+# Misc
+*.log

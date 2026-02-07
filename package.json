@@ -1,0 +1,51 @@
+{
+  "name": "tanstack-start-proto",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "type": "module",
+  "scripts": {
+    "dev": "turbo build && vite dev",
+    "build": "turbo build && vite build",
+    "start": "vite preview",
+    "build:packages": "turbo build",
+    "lint": "oxlint",
+    "format": "oxfmt --write .",
+    "format:check": "oxfmt .",
+    "test": "turbo test",
+    "e2e": "playwright test",
+    "typecheck": "turbo typecheck && tsc --noEmit"
+  },
+  "dependencies": {
+    "@repo/data": "*",
+    "@repo/styles": "*",
+    "@repo/ui": "*",
+    "@tanstack/react-router": "^1.114.3",
+    "@tanstack/react-start": "^1.114.3",
+    "@tanstack/react-virtual": "^3.13.18",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.58.1",
+    "@repo/tsconfig": "*",
+    "@tailwindcss/vite": "^4.0.0",
+    "@types/react": "^19.2.13",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.3",
+    "@vitest/coverage-v8": "^4.0.18",
+    "lefthook": "^2.1.0",
+    "oxfmt": "^0.28.0",
+    "oxlint": "^1.43.0",
+    "tailwindcss": "^4.0.0",
+    "turbo": "^2.3.3",
+    "typescript": "^5.7.2",
+    "vite": "^7.0.0",
+    "vitest": "^4.0.18"
+  },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "4.57.1"
+  },
+  "packageManager": "bun@1.3.6"
+}
