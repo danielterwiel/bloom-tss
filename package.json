@@ -24,6 +24,7 @@
     "@tanstack/react-router": "^1.114.3",
     "@tanstack/react-start": "^1.114.3",
     "@tanstack/react-virtual": "^3.13.18",
+    "nitro": "^3.0.1-alpha.2",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },
